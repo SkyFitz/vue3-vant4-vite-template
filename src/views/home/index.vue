@@ -1,40 +1,49 @@
 <script setup lang="ts">
-import router from '@/router'
-const menus = [
-  // 使用require会报未定义 new URL(url, import.meta.url)是vite静态资源处理的方法
-  { name: '事前申请', id: 1, img: new URL('@/assets/img/home/shenqing.png', import.meta.url).href },
-  { name: '费用报销', id: 2, img: new URL('@/assets/img/home/baoxiao.png', import.meta.url).href },
-  { name: '预支借款', id: 3, img: new URL('@/assets/img/home/jiekuan.png', import.meta.url).href },
-  { name: '发票管理', id: 4, img: new URL('@/assets/img/home/fapiao.png', import.meta.url).href }
-]
-function clickMenus(e:number) {
-  router.push({
-    path: e == 1 ? '/apply' : e == 2 ? '/reimbursement' : e == 3 ? '/loan' : '/invoice-list'
-  })
+import {ref} from "vue"
+const operate = ref(0)
+const currentDate = ref(['2021', '01', '01'])
+const startTime = ref('')
+const endTime = ref('')
+const showPicker = ref(false)
+const onDateClick = (index) =>{
+  const value = (index === 1 ? startTime.value : endTime.value) || '2021-12-12'
+  console.log(value)
+  currentDate.value = value.split('-')
+  showPicker.value = true
+  operate.value = index
+  console.log(currentDate.value)
 }
+const onConfirm = ({ selectedValues }) => {
+  operate.value === 1 ? startTime.value = selectedValues.join('-') : endTime.value = selectedValues.join('-')
+  showPicker.value = false;
+};
 </script>
 <template>
   <div class="home-container">
-    <van-cell :title="item.name" is-link v-for="item in menus" :key="item.id" @click="clickMenus(item.id)">
-      <template #icon>
-        <van-image width="28px" height="28px" fit="contain" :src="item.img" />
-      </template>
-    </van-cell>
+    <van-form>
+      <van-field
+        v-model="startTime"
+        is-link
+        readonly
+        name="datePicker"
+        label="开始时间"
+        placeholder="点击选择开始时间"
+        @click="onDateClick(1)"
+      />
+      <van-field
+        v-model="endTime"
+        is-link
+        readonly
+        name="datePicker"
+        label="结束时间"
+        placeholder="点击选择开始时间"
+        @click="onDateClick(2)"
+      />
+      <van-popup v-model:show="showPicker" position="bottom">
+        <van-date-picker v-model="currentDate" @confirm="onConfirm" @cancel="showPicker = false" />
+      </van-popup>
+
+    </van-form>
   </div>
 </template>
-<style lang="scss">
-.home-container {
-  padding: 0 40px;
-  .van-cell {
-    padding: 40px 0;
-    .van-cell__title {
-      font-size: 30px;
-      font-weight: 400;
-      color: #333333;
-    }
-    .van-image{
-      padding-right: 20px;
-    }
-  }
-}
-</style>
+
